@@ -24,4 +24,10 @@ ENGINE = MaterializedPostgreSQL(
 )
 SETTINGS
     materialized_postgresql_tables_list = 'items',
-    materialized_postgresql_allow_automatic_update = 1;
+    materialized_postgresql_allow_automatic_update = 1
+    TABLE OVERRIDE items (
+    COLUMNS (
+        id Int32,
+        search_content String
+    )
+);
