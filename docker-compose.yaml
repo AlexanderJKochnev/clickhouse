@@ -1,0 +1,47 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse_search
+    restart: unless-stopped
+    environment:
+      - CLICKHOUSE_USER=${CH_USER}
+      - CLICKHOUSE_PASSWORD=${CH_PASSWORD}
+      - CLICKHOUSE_DB=${CH_DB}
+    ulimits:
+      nofile:
+        soft: ${SOFT}
+        hard: ${HARD}
+    # Ограничиваем ресурсы, чтобы CH не "съел" весь сервер при индексации
+    deploy:
+      resources:
+        limits:
+          cpus: '${LIMITS_CPU}'
+          memory: ${LIMITS_MEMORY}
+        reservations:
+          cpus: '${RESERVE_CPUS}'
+          memory: ${RESERVE_MEMORY}
+    expose:
+      - "${EXPOSE_HTTP}" # HTTP (для асинхронных запросов из FastAPI)
+      - "${EXPOSE_NATIVE}" # Native (для системных нужд)
+    volumes:
+      - /mnt/hdd_data/volumes/clickhouse/ch_data:/var/lib/clickhouse
+      - /mnt/hdd_data/volumes/clickhouse/ch_init:/docker-entrypoint-initdb.d
+    networks:
+      clickhouse_network:
+        ipv4_address: ${IP_CLICK}
+      clickhousepg_network:
+        ipv4_address: ${IP_CLICKPG}
+
+networks:
+  clickhouse_network:
+    name: clickhouse_network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${SUBNET_CLICK}
+  clickhousepg_network:
+    name: clickhousepg_network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${SUBNET_CLICKPG}
