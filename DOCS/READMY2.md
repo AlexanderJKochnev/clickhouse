@@ -34,3 +34,10 @@ CREATE MATERIALIZED VIEW default.items_search_mv TO default.items_search↴│
    │↳    _version                                                            ↴│
    │↳FROM wine_replica.items                                                  │
    └──────────────────────────────────────────────────────────────────────────┘
+ АВТОМАТИЗАЦИЯ СХЛОПЫВАНИЯ СТАРЫХ ВЕРСИЙ / DELETED 
+ALTER TABLE my_table MODIFY SETTING 
+    vertical_merge_algorithm_min_rows = 1, 
+    vertical_merge_algorithm_min_columns = 1;
+
+удаление старых данных (по времени)
+ALTER TABLE my_table MODIFY TTL updated_at + INTERVAL 1 MONTH;

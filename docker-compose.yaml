@@ -29,20 +29,20 @@ services:
       - ./ch_config/experimental.xml:/etc/clickhouse-server/users.d/experimental.xml
     networks:
       clickhouse_network:
-        ipv4_address: ${IP_CLICK}
+        # ipv4_address: ${IP_CLICK}
       clickhousepg_network:
-        ipv4_address: ${IP_CLICKPG}
+        # ipv4_address: ${IP_CLICKPG}
 
 networks:
+  vllm_network:
+    name: vllm_network
+    driver: bridge
+    external: true
   clickhouse_network:
     name: clickhouse_network
     driver: bridge
-    ipam:
-      config:
-        - subnet: ${SUBNET_CLICK}
+    external: true
   clickhousepg_network:
     name: clickhousepg_network
     driver: bridge
-    ipam:
-      config:
-        - subnet: ${SUBNET_CLICKPG}
+    external: true
