@@ -2,6 +2,9 @@
 ## схема
 ### Postgres -> (WAL репликация) -> wine_replica.items (в ClickHouse).
 ### wine_replica.items -> (Внутренний MV) -> items_search (с индексом).
+
+
+
 SHOW DATABASES;
 USE <DATABASE NAME>;
 SHOW TABLES;

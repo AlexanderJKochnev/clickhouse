@@ -16,7 +16,7 @@ DROP TABLE IF EXISTS items_search;
 DROP TABLE IF EXISTS items_search_mv;
 
 -- Создаем таблицу с ReplacingMergeTree для отслеживания версий
-CREATE TABLE items_search (
+CREATE TABLE default.items_search (
     id Int32,
     search_content String,
     _sign Int8 DEFAULT 1,
@@ -28,7 +28,7 @@ CREATE TABLE items_search (
 ) ENGINE = ReplacingMergeTree(_version)
 ORDER BY id;
 
-CREATE MATERIALIZED VIEW items_search_mv TO items_search AS
+CREATE MATERIALIZED VIEW default.items_search_mv TO default.items_search AS
 SELECT
     id,
     search_content,
@@ -37,7 +37,7 @@ SELECT
 FROM wine_replica.items;
 
 -- Вставляем ТОЛЬКО актуальные записи из реплики
-INSERT INTO items_search
+INSERT INTO default.items_search
 SELECT
     id,
     search_content,

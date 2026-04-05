@@ -24,9 +24,11 @@ services:
       - "${EXPOSE_HTTP}" # HTTP (для асинхронных запросов из FastAPI)
       - "${EXPOSE_NATIVE}" # Native (для системных нужд)
     volumes:
-      - /mnt/hdd_data/volumes/clickhouse/ch_data:/var/lib/clickhouse
-      - ./ch_init:/docker-entrypoint-initdb.d
-      - ./ch_config/experimental.xml:/etc/clickhouse-server/users.d/experimental.xml
+      - ${BIND_VOLUMES}/clickhouse/ch_data:/var/lib/clickhouse
+      - ${BIND_VOLUMES}/clickhouse/ch_init:/docker-entrypoint-initdb.d
+      - ${BIND_VOLUMES}/clickhouse/ch_config/experimental.xml:/etc/clickhouse-server/users.d/experimental.xml
+      # - ./ch_init:/docker-entrypoint-initdb.d
+      # - ./ch_config/experimental.xml:/etc/clickhouse-server/users.d/experimental.xml
     networks:
       clickhouse_network:
         # ipv4_address: ${IP_CLICK}
