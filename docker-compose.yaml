@@ -1,6 +1,7 @@
 services:
   clickhouse:
-    image: clickhouse/clickhouse-server:latest
+    image: clickhouse:local
+    # image: clickhouse/clickhouse-server:latest
     container_name: clickhouse_search
     restart: unless-stopped
     environment:
