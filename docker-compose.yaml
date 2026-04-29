@@ -66,11 +66,12 @@ services:
       clickhousepg_network: { }
       nginx_gateway_shared_network: { }
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9333/status" ]
+      # Вариант 1: Проверка через /cluster/status (рекомендуемый)
+      test: [ "CMD", "curl", "-f", "http://localhost:9333/cluster/status" ]
       interval: 10s
       timeout: 5s
-      retries: 10  # Увеличиваем до 10, так как master может стартовать дольше
-      start_period: 45s  # Увеличиваем start_period
+      retries: 5
+      start_period: 30s
     
   
   seaweedfs_volume:
