@@ -92,7 +92,7 @@ services:
       -publicUrl=${SEAWEEDFS_PUBLIC_URL:-http://localhost}
       -dataCenter=dc1
       -rack=rack1
-      -max=500  # максимум 500 томов (500 * 30GB = 15TB)
+      -max=500
       -dir=/data
       -idxFolder=/data/index
       -maxCpu=${VOLUME_MAX_CPU:-6}
