@@ -80,58 +80,58 @@ services:
       retries: 5
       start_period: 30s
     
-    seaweedfs_volume:
-      image: chrislusf/seaweedfs:latest
-      container_name: seaweedfs_volume
-      restart: unless-stopped
-      command: |
-        volume
-        -mserver=seaweedfs_master:9333
-        -ip=seaweedfs_volume
-        -port=8080
-        -publicUrl=${SEAWEEDFS_PUBLIC_URL:-http://localhost}
-        -dataCenter=dc1
-        -rack=rack1
-        -max=500  # максимум 500 томов (500 * 30GB = 15TB)
-        -dir=/data
-        -idxFolder=/data/index
-        -maxCpu=${VOLUME_MAX_CPU:-6}
-      environment:
-        - WEED_MAX_MEMORY=12884901888  # 12GB + резерв (20% от 64GB)
-        - GODEBUG=madvdontneed=1       # Оптимизация памяти для Go
-        - TMPDIR=/tmp/seaweedfs
-      volumes:
-        - ${BIND_VOLUMES}/seaweedfs/volumes:/data
-        - ${BIND_VOLUMES}/seaweedfs/tmp:/tmp/seaweedfs
-        - type: tmpfs
-          target: /tmp/seaweedfs_cache
-          tmpfs:
-            size: 1073741824  # 1GB tmpfs для кэша (очень быстро)
-      ulimits:
-        nofile:
-          soft: ${SOFT}
-          hard: ${HARD}
-      deploy:
-        resources:
-          limits:
-            cpus: '${VOLUME_MAX_CPU}'      # Используем 12 ядер из 28 (Xeon E5-2680 v4 имеет 14c/28t)
-            memory: 20G       # 20% от 64GB ≈ 12.8GB, берем с запасом
-          reservations:
-            cpus: '4.0'       # Минимум 4 ядра
-            memory: 8G        # Минимум 8GB
-      networks:
-        clickhouse_network: { }
-        clickhousepg_network: { }
-        nginx_gateway_shared_network: { }
-      depends_on:
-        seaweedfs_master:
-          condition: service_healthy
-      healthcheck:
-        test: [ "CMD", "curl", "-f", "http://localhost:8080/status" ]
-        interval: 15s
-        timeout: 5s
-        retries: 3
-        start_period: 45s
+  seaweedfs_volume:
+    image: chrislusf/seaweedfs:latest
+    container_name: seaweedfs_volume
+    restart: unless-stopped
+    command: |
+      volume
+      -mserver=seaweedfs_master:9333
+      -ip=seaweedfs_volume
+      -port=8080
+      -publicUrl=${SEAWEEDFS_PUBLIC_URL:-http://localhost}
+      -dataCenter=dc1
+      -rack=rack1
+      -max=500  # максимум 500 томов (500 * 30GB = 15TB)
+      -dir=/data
+      -idxFolder=/data/index
+      -maxCpu=${VOLUME_MAX_CPU:-6}
+    environment:
+      - WEED_MAX_MEMORY=12884901888  # 12GB + резерв (20% от 64GB)
+      - GODEBUG=madvdontneed=1       # Оптимизация памяти для Go
+      - TMPDIR=/tmp/seaweedfs
+    volumes:
+      - ${BIND_VOLUMES}/seaweedfs/volumes:/data
+      - ${BIND_VOLUMES}/seaweedfs/tmp:/tmp/seaweedfs
+      - type: tmpfs
+        target: /tmp/seaweedfs_cache
+        tmpfs:
+          size: 1073741824  # 1GB tmpfs для кэша (очень быстро)
+    ulimits:
+      nofile:
+        soft: ${SOFT}
+        hard: ${HARD}
+    deploy:
+      resources:
+        limits:
+          cpus: '${VOLUME_MAX_CPU}'      # Используем 12 ядер из 28 (Xeon E5-2680 v4 имеет 14c/28t)
+          memory: 20G       # 20% от 64GB ≈ 12.8GB, берем с запасом
+        reservations:
+          cpus: '4.0'       # Минимум 4 ядра
+          memory: 8G        # Минимум 8GB
+    networks:
+      clickhouse_network: { }
+      clickhousepg_network: { }
+      nginx_gateway_shared_network: { }
+    depends_on:
+      seaweedfs_master:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/status" ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
 
 networks:
   vllm_network:
