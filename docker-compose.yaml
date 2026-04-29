@@ -88,8 +88,8 @@ services:
       - "-rack=rack1"
       - "-max=500"
       - "-dir=/data"
-      - "-idxFolder=/data/index"
       - "-maxCpu=6"  # жесткое значение, не переменная
+      # - "-idxFolder=/data/index"
     environment:
       - WEED_MAX_MEMORY=12884901888
       - GODEBUG=madvdontneed=1
