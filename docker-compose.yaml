@@ -40,35 +40,28 @@ services:
     image: chrislusf/seaweedfs:4.22
     container_name: seaweedfs_master
     restart: unless-stopped
-    command: |
-      master
-      -ip=seaweedfs_master
-      -port=9333
-      -peers=seaweedfs_master:9333
-      -defaultReplication=001
-      -volumeSizeLimitMB=1024
-      -heartbeatIntervalSeconds=1
-      -electionTimeoutMs=1000
-      -garbageThreshold=0.3
-      -index=leveldb
-      -compactionMBps=10
-      -maxParallelVacuumPerServer=1
+    command:
+      - "master"
+      - "-ip=seaweedfs_master"
+      - "-port=9333"
+      - "-defaultReplication=001"
+      - "-volumeSizeLimitMB=1024"
+      - "-heartbeatIntervalSeconds=1"
+      - "-garbageThreshold=0.3"
+      # Убираем -peers (не нужен для одного master)
+      # Убираем -index, -compactionMBps, -maxParallelVacuumPerServer (это для volume)
     environment:
-      - WEED_MAX_MEMORY=4294967296  # 4GB для master (минимально)
+      - WEED_MAX_MEMORY=4294967296
     volumes:
       - ${BIND_VOLUMES}/seaweedfs/master:/data
     ulimits:
       nofile:
         soft: ${SOFT}
         hard: ${HARD}
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'  # Master не требует много CPU
-          memory: 6G   # 4GB + 2GB резерв
-        reservations:
-          cpus: '0.5'
-          memory: 2G
+    # Для docker-compose (без swarm)
+    cpus: 1.0
+    mem_limit: 6G
+    mem_reservation: 2G
     networks:
       clickhouse_network: { }
       clickhousepg_network: { }
@@ -77,9 +70,10 @@ services:
       test: [ "CMD", "curl", "-f", "http://localhost:9333/status" ]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 10  # Увеличиваем до 10, так как master может стартовать дольше
+      start_period: 45s  # Увеличиваем start_period
     
+  
   seaweedfs_volume:
     image: chrislusf/seaweedfs:4.22  # стабильная версия
     container_name: seaweedfs_volume
