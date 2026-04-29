@@ -146,3 +146,6 @@ networks:
     name: clickhousepg_network
     driver: bridge
     external: true
+  nginx_gateway_shared_network:
+    driver: bridge
+    external: true
