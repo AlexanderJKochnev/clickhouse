@@ -81,24 +81,24 @@ services:
       start_period: 30s
     
   seaweedfs_volume:
-    image: chrislusf/seaweedfs:latest
+    image: chrislusf/seaweedfs:4.22  # стабильная версия
     container_name: seaweedfs_volume
     restart: unless-stopped
-    command: |
-      volume
-      -mserver=seaweedfs_master:9333
-      -ip=seaweedfs_volume
-      -port=8080
-      -publicUrl=${SEAWEEDFS_PUBLIC_URL:-http://localhost}
-      -dataCenter=dc1
-      -rack=rack1
-      -max=500
-      -dir=/data
-      -idxFolder=/data/index
-      -maxCpu=${VOLUME_MAX_CPU:-6}
+    command:
+      - "volume"
+      - "-mserver=seaweedfs_master:9333"
+      - "-ip=seaweedfs_volume"
+      - "-port=8080"
+      - "-publicUrl=${SEAWEEDFS_PUBLIC_URL:-http://localhost}"
+      - "-dataCenter=dc1"
+      - "-rack=rack1"
+      - "-max=500"
+      - "-dir=/data"
+      - "-idxFolder=/data/index"
+      - "-maxCpu=6"  # жесткое значение, не переменная
     environment:
-      - WEED_MAX_MEMORY=12884901888  # 12GB + резерв (20% от 64GB)
-      - GODEBUG=madvdontneed=1       # Оптимизация памяти для Go
+      - WEED_MAX_MEMORY=12884901888
+      - GODEBUG=madvdontneed=1
       - TMPDIR=/tmp/seaweedfs
     volumes:
       - ${BIND_VOLUMES}/seaweedfs/volumes:/data
@@ -106,19 +106,15 @@ services:
       - type: tmpfs
         target: /tmp/seaweedfs_cache
         tmpfs:
-          size: 1073741824  # 1GB tmpfs для кэша (очень быстро)
+          size: 1073741824
     ulimits:
       nofile:
         soft: ${SOFT}
         hard: ${HARD}
-    deploy:
-      resources:
-        limits:
-          cpus: '${VOLUME_MAX_CPU}'      # Используем 12 ядер из 28 (Xeon E5-2680 v4 имеет 14c/28t)
-          memory: 20G       # 20% от 64GB ≈ 12.8GB, берем с запасом
-        reservations:
-          cpus: '4.0'       # Минимум 4 ядра
-          memory: 8G        # Минимум 8GB
+    # Для docker-compose up (без swarm)
+    cpus: 12.0
+    mem_limit: 20G
+    mem_reservation: 8G
     networks:
       clickhouse_network: { }
       clickhousepg_network: { }
