@@ -75,7 +75,7 @@ services:
     
   
   seaweedfs_volume:
-    image: chrislusf/seaweedfs:4.22  # стабильная версия
+    image: chrislusf/seaweedfs:4.22
     container_name: seaweedfs_volume
     restart: unless-stopped
     command:
@@ -88,12 +88,12 @@ services:
       - "-rack=rack1"
       - "-max=500"
       - "-dir=/data"
-      - "-maxCpu=6"  # жесткое значение, не переменная
-      # - "-idxFolder=/data/index"
+      # -maxCpu удален - этот флаг не существует
     environment:
       - WEED_MAX_MEMORY=12884901888
       - GODEBUG=madvdontneed=1
       - TMPDIR=/tmp/seaweedfs
+      - GOMAXPROCS=12  # ← Альтернатива для управления CPU в Go
     volumes:
       - ${BIND_VOLUMES}/seaweedfs/volumes:/data
       - ${BIND_VOLUMES}/seaweedfs/tmp:/tmp/seaweedfs
@@ -105,7 +105,7 @@ services:
       nofile:
         soft: ${SOFT}
         hard: ${HARD}
-    # Для docker-compose up (без swarm)
+    # Для docker-compose up (без swarm) - этот параметр уже есть и правильный
     cpus: 12.0
     mem_limit: 20G
     mem_reservation: 8G
