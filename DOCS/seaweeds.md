@@ -2,8 +2,11 @@
 1. ## проверка соединения fastapi и seaweed (из контейнера fastapi)
 docker compose exec -it app sh (из директории)
 python -c "import urllib.request; print(urllib.request.urlopen('http://seaweedfs_master:9333/cluster/status').read())"
-2. ## создание таблицы в clickhouse
-3. ### Создаем таблицу метаданных ()
+python -c "import urllib.request; print(urllib.request.urlopen('http://seaweedfs_master:9333/dir/assign').read())"
+python -c "import urllib.request; print(urllib.request.urlopen('http://seaweedfs_master:9333/dir/status').read())"
+b'{"Topology":{"Max":500,"Free":500,"DataCenters":[{"Id":"dc1","Racks":[{"Id":"rack1","DataNodes":[{"Url":"seaweedfs_volume:8080","PublicUrl":"https://abc8888.ru","Volumes":0,"EcShards":0,"Max":500,"VolumeIds":" "}]}]}],"Layouts":[{"replication":"001","ttl":"","writables":null,"collection":"","diskType":"hdd"}]},"TopologyId":"21342b0c-c6f7-47f5-ab3f-5876dd1e8ec7","Version":"30GB 4.22 0b3cc8d12"}'
+3. ## создание таблицы в clickhouse
+4. ### Создаем таблицу метаданных ()
 CREATE TABLE images_metadata
 (
     `fid_thumb` String NOT NULL,          -- thumb
