@@ -18,10 +18,6 @@ CREATE TABLE default.images_metadata
     `tags` String,
     `inserted_at` DateTime64(3) DEFAULT now64(3),
     `is_deleted` UInt8 DEFAULT 0,
-    
-    -- Оптимальный текстовый индекс для ClickHouse 26:
-    -- 1. preprocessor = lower(tags) переводит весь текст в нижний регистр
-    -- 2. tokenizer = splitByNonAlpha разбивает строку на слова и выкидывает мусор/пунктуацию
     INDEX idx_tags_text tags TYPE text(
         tokenizer = splitByNonAlpha,
         preprocessor = lower(tags)
@@ -30,10 +26,12 @@ CREATE TABLE default.images_metadata
 ENGINE = ReplacingMergeTree(inserted_at)
 PARTITION BY toYYYYMM(inserted_at)
 -- Быстрый поиск по идентификаторам seaweed
-ORDER BY (fid, fid_thumb)
--- ОЧИСТКА ЧЕРЕЗ 10 ДНЕЙ ПОСЛЕ УДАЛЕНИЯ
+ORDER BY fid
+-- ОЧИСТКА ЧЕРЕЗ 10 ДНЕЙ ПОСЛЕ УДАЛЕНИЯ (НО ЭТО ТОЖЕ НЕ УДАЛЕНИИЕ А МЯГКОЕ УДАЛЕНИЕ)
 TTL inserted_at + toIntervalDay(10) WHERE is_deleted = 1
 SETTINGS index_granularity = 8192;
+
+( GRANULARITY 1000000000 - для этого индекса это ИДЕАЛЬНО! ЭТО НЕ ОШИБКА!)
 
 ### 2.2. Создаем view default.images_metadata_active (скрывает удаленные записи)
 CREATE VIEW images_metadata_active AS
