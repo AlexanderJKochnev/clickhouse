@@ -39,7 +39,7 @@ SELECT DISTINCT
     arrayJoin(JSONDynamicPaths(attributes)) AS key_name
 FROM beverages_indexed
 
-## !!! СОЗДАНИЕ ПЛОСКОЙ ТАБЛИЦЫ bev_flat
+# !!! СОЗДАНИЕ ПЛОСКОЙ ТАБЛИЦЫ bev_flat
 CREATE TABLE default.bev_flat (
 `id` String,
 `name` String,
@@ -142,10 +142,43 @@ FROM (
     )
 );        
 
-ALTER TABLE default.bev_flat ADD INDEX idx_name (name) TYPE text(tokenizer = splitByNonAlpha);
-ALTER TABLE default.bev_flat MATERIALIZE INDEX idx_name SETTINGS mutations_sync = 1;
+## индекс по name
+ALTER TABLE default.bev_flat ADD INDEX idx_norm_name name TYPE text(
+        tokenizer = splitByNonAlpha,
+        preprocessor = normalize_text(name)
+    ) GRANULARITY 1000000;
+ALTER TABLE default.bev_flat MATERIALIZE INDEX idx_norm_name;
 
-
+## индекс по brand
+ALTER TABLE default.bev_flat ADD INDEX idx_norm_brand brand TYPE text(
+        tokenizer = splitByNonAlpha,
+        preprocessor = normalize_text(brand)
+    ) GRANULARITY 1000000;
+ALTER TABLE default.bev_flat MATERIALIZE INDEX idx_norm_brand;
+## индекс по country (ВНИМАНИЕ мусор Buy Now - дешевое из USA)
+ALTER TABLE default.bev_flat ADD INDEX idx_norm_country country TYPE text(
+        tokenizer = splitByNonAlpha,
+        preprocessor = normalize_text(country)
+    ) GRANULARITY 1000000;
+ALTER TABLE default.bev_flat MATERIALIZE INDEX idx_norm_country;
+## индекс по region
+ALTER TABLE default.bev_flat ADD INDEX idx_norm_region region TYPE text(
+        tokenizer = splitByNonAlpha,
+        preprocessor = normalize_text(region)
+    ) GRANULARITY 1000000;
+ALTER TABLE default.bev_flat MATERIALIZE INDEX idx_norm_region;
+## индекс по subregion
+ALTER TABLE default.bev_flat ADD INDEX idx_norm_subregion subregion TYPE text(
+        tokenizer = splitByNonAlpha,
+        preprocessor = normalize_text(subregion)
+    ) GRANULARITY 1000000;
+ALTER TABLE default.bev_flat MATERIALIZE INDEX idx_norm_subregion;
+## индекс по site
+ALTER TABLE default.bev_flat ADD INDEX idx_norm_site site TYPE text(
+        tokenizer = splitByNonAlpha,
+        preprocessor = normalize_text(site)
+    ) GRANULARITY 1000000;
+ALTER TABLE default.bev_flat MATERIALIZE INDEX idx_norm_site;
 
 
 # 3. ПОИСК И СРАВНЕНИЕ ОДИНАКОВЫХ ЗНАЧЕНИЙ
@@ -162,9 +195,12 @@ ENGINE = MaterializedPostgreSQL(
 SETTINGS
     materialized_postgresql_tables_list = 'drinks(id, title, subtitle, display_name, lwin, subcategory_id, site_id, producer_id, classification_id, designation_id, parcel_id), subcategories(id, category_id, name), producers(id, name, producertitle_id), categories(id, name), classifications(id, name), designations(id, name), parcels(id, name), producertitles(id, name), sites(id, name, subregion_id), subregions(id, name, region_id), regions(id, name, country_id), countries(id, name), varietals(id, name), drink_varietal_associations(id, drink_id, varietal_id, percentage), foods(id, name), drink_food_associations(id, drink_id, food_id)';
 
-## 3.2. создание normalize table with indexes
+## 3.2. создание table with indexes
 
-### drinks_norm
+### drinks
+
+
+
 CREATE TABLE default.drinks_norm
 (
     id UInt64,  -- или Int64, в зависимости от типа исходного поля

@@ -1,4 +1,4 @@
-# SEAWEEDFS
+# КАТАЛОГ ДЛЯ РАБОТЫ С SEAWEED
 ## 1. проверка соединения fastapi и seaweed (из контейнера fastapi)
 docker compose exec -it app sh (из директории)
 python -c "import urllib.request; print(urllib.request.urlopen('http://seaweedfs_master:9333/cluster/status').read())"
@@ -16,12 +16,14 @@ CREATE TABLE default.images_metadata
     `thumb_size_bytes` UInt32,
     `mime_type` LowCardinality(String),
     `tags` String,
+    `data_hash` UInt64, 
     `inserted_at` DateTime64(3) DEFAULT now64(3),
     `is_deleted` UInt8 DEFAULT 0,
+    INDEX idx_hash data_hash TYPE minmax GRANULARITY 1,
     INDEX idx_tags_text tags TYPE text(
         tokenizer = splitByNonAlpha,
-        preprocessor = lower(tags)
-    ) GRANULARITY 1
+        preprocessor = normalize_text(tags)
+    ) GRANULARITY 100000000
 )
 ENGINE = ReplacingMergeTree(inserted_at)
 PARTITION BY toYYYYMM(inserted_at)

@@ -1,0 +1,35 @@
+# ЧАСТОТНЫЙ АНАЛИЗ
+## ПОИСК НАИБОЛЕЕ ЧАСТЫХ СЛОВОСОЧЕТАНИЙ ИЗ 3-Х СЛОВ
+1. TABLE: flat_drinks_lake
+
+WITH
+    ['the', 'a', 'an', 'and', 'but', 'or', 'if', 'because', 'as', 'until', 'while',
+     'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once',
+     'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself', 'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves',
+     'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'dont', 'should', 'cant', 'dont', 'will', 'just', 'so', 'than'] AS stop_words
+SELECT
+    arrayStringConcat(triplet, ' ') AS phrase,
+    count() AS frequency
+FROM (
+    SELECT
+        -- 1. Склеиваем апострофы
+        -- 2. Разбиваем на токены
+        tokens(replaceRegexpAll(lowerUTF8(assumeNotNull(review)), '\'', '')) AS words,
+        -- 3. Собираем 4-граммы (для длины 4 используем range(1, length(words) - 2))
+        arrayMap(i -> arraySlice(words, i, 4), range(1, length(words) - 2)) AS triplets
+    FROM flat_drinks_lake
+    WHERE review IS NOT NULL
+)
+ARRAY JOIN triplets AS triplet
+WHERE
+    length(triplet) = 4
+    -- ФИЛЬТР 1: Внутри словосочетания не должно быть токенов, состоящих ТОЛЬКО из цифр
+    -- (это уберет "1", "2", "6", "140", "15" и т.д.)
+    AND NOT arrayExists(x -> match(x, '^\d+$'), triplet)
+    -- ФИЛЬТР 2: Исключаем фразы, целиком состоящие из стоп-слов
+    AND NOT arrayAll(x -> has(stop_words, x), triplet)
+    -- ФИЛЬТР 3: Первое или последнее слово не должно быть стоп-словом
+    AND (NOT has(stop_words, triplet[1]) OR NOT has(stop_words, triplet[4]))
+GROUP BY phrase
+ORDER BY frequency DESC
+LIMIT 100
