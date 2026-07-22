@@ -33,9 +33,9 @@ services:
       # - ./ch_config/experimental.xml:/etc/clickhouse-server/users.d/experimental.xml
     networks:
       clickhouse_network:
-        # ipv4_address: ${IP_CLICK}
+        ipv4_address: ${IP_CLICK}
       clickhousepg_network:
-        # ipv4_address: ${IP_CLICKPG}
+        ipv4_address: ${IP_CLICKPG}
   
   seaweedfs_master:
     image: chrislusf/seaweedfs:4.22
